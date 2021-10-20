@@ -5,7 +5,13 @@ terraform {
       version = "~> 3.63"
     }
   }
-
+  # On first terraform apply,  you should comment out this.
+/*   backend "s3" {
+    bucket = "wp-site-tfstate"
+    key    = "environment/terraform"
+    region = "eu-central-1"
+    dynamodb_table = "wp-site-terraform-locking"
+  } */
   required_version = ">= 1.0.9"
 }
 

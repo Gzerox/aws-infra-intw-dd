@@ -1,11 +1,10 @@
-
 locals {
   # Utility - Easily manage the naming convention for network components
-  name_suffix="${var.project_name}-${var.aws_region}"
+  name_suffix="${var.aws_resource_suffix}"
 }
 
 resource "aws_vpc" "main" {
-  cidr_block       = var.cidr_block
+  cidr_block       = var.aws_vpc_cidr_block
 
   tags = {
     Name = "vpc-${local.name_suffix}"
@@ -21,8 +20,9 @@ resource "aws_internet_gateway" "main" {
   }
 }
 
-# TODO: This can be improved in many different ways
-# ISSUE: The 'netnum' params need to be increased 
+##################################
+#         Public Subnets
+##################################
 resource "aws_subnet" "public" {
   for_each  = var.aws_availability_zones # Lets create 1 Public Subnet for every AZ
 
@@ -42,26 +42,31 @@ resource "aws_route_table" "public" {
   for_each  = aws_subnet.public # Lets create 1 RT for every public subnet
   vpc_id = aws_vpc.main.id
 
-  route = []
+  route {
+      cidr_block = "0.0.0.0/0"
+      gateway_id = aws_internet_gateway.main.id
+  }
 
-    tags = {
-      Name = "rt-${local.name_suffix}-${each.value.availability_zone}-pub"
-    }
+  tags = {
+    Name = "rt-${local.name_suffix}-${each.value.availability_zone}-pub"
+  }
 }
-resource "aws_route" "public" {
-  for_each=aws_route_table.public
-
-  route_table_id             = each.value.id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id      = aws_internet_gateway.main.id
+# Associate RT <-> SN
+resource "aws_route_table_association" "public" {
+  for_each = aws_subnet.public
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.public[each.value.availability_zone].id
 }
 
+##################################
+#         Private Subnets
+##################################
 resource "aws_subnet" "private" {
   for_each  = var.aws_availability_zones # Lets create 1 Private Subnet for every AZ
 
   vpc_id     = aws_vpc.main.id
   availability_zone = each.value
-  #cidr_block = cidrsubnet(aws_vpc.main.cidr_block,4,2)
+  #TODO: Bad, to improve - avoid leaving "empty ip range within the cidr"
   cidr_block = cidrsubnet(aws_vpc.main.cidr_block,4,length(aws_subnet.public)+index(tolist(var.aws_availability_zones),each.value))
 
     map_public_ip_on_launch = false
@@ -70,36 +75,46 @@ resource "aws_subnet" "private" {
   }
 }
 # Let make sure we can reach the NAT gateway from private-routing-table
-# Make sure we can get out on internet with this route table
 resource "aws_route_table" "private" {
   for_each  = aws_subnet.private # Lets create 1 RT for every Private Subnet
   vpc_id = aws_vpc.main.id
-}
-resource "aws_route" "private" {
-  count= length(aws_route_table.private)
 
-  route_table_id              = element(aws_route_table.private,count.index).id
-  destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id      = element(aws_nat_gateway.main,count.index).id
-}
+  #route = []
+  route {
+      cidr_block = "0.0.0.0/0"
+      nat_gateway_id = aws_nat_gateway.main[each.value.availability_zone].id
+  }
 
+  tags = {
+    Name = "rt-${local.name_suffix}-${each.value.availability_zone}-prv"
+  }
+}
+# Associate RT <-> SN
+resource "aws_route_table_association" "private" {
+  for_each = aws_subnet.private
+  subnet_id      = each.value.id
+  route_table_id = aws_route_table.private[each.value.availability_zone].id
+}
 
 # EIP For the Nat Gateway
 resource "aws_eip" "gw" {
-  count  = length(var.aws_availability_zones) # Lets create 1 EIP for every AZ
+  for_each  = var.aws_availability_zones # Lets create 1 EIP for every AZ
   vpc      = true
+
+  tags = {
+    Name = "eip-ngw-${local.name_suffix}-${each.value}"
+  }
 }
 
 # Resource required whenever we want to go out in the internet from private subnet
-#TODO: We need to create NatGateway<->EIP for every az.
 resource "aws_nat_gateway" "main" {
   for_each  = aws_subnet.public
 
-  allocation_id = element(aws_eip.gw,0).id
+  allocation_id = aws_eip.gw[each.value.availability_zone].id
   subnet_id = each.value.id
 
   tags = {
-    Name = "ngw-${local.name_suffix}-1a"
+    Name = "ngw-${local.name_suffix}-${each.value.availability_zone}"
   }
 
   # From Terraform Documentation:
@@ -107,4 +122,3 @@ resource "aws_nat_gateway" "main" {
   # on the Internet Gateway for the VPC.
   depends_on = [aws_internet_gateway.main]
 }
-

@@ -1,6 +1,5 @@
 variable "cidr_block" {
   type = string
-  default = "10.1.0.0/16"
 }
 
 variable "project_name" {
@@ -11,6 +10,10 @@ variable "project_name" {
 
 variable "environment" {
   description = "Name of the environment."
+  type        = string
+}
+variable "environment_shortname" {
+  description = "Short name form of the environment"
   type        = string
 }
 
