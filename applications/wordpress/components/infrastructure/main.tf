@@ -1,5 +1,5 @@
 module "network" {
-  source = "./modules/network"
+  source = "../../modules/network"
   aws_region = var.aws_region
   aws_availability_zones = var.aws_availability_zones
   aws_resource_suffix= "${var.project_name}-${var.environment_shortname}"
@@ -7,7 +7,7 @@ module "network" {
 }
 
 module "webserver" {
-  source = "./modules/webserver"
+  source = "../../modules/webserver"
   aws_resource_suffix = "${var.project_name}-${var.environment_shortname}"
   vpc_id = module.network.vpc_id
   subnets_ids = module.network.subnet_public_ids

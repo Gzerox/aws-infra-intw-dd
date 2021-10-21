@@ -1,5 +1,5 @@
 module "cicd" {
-  source = "../modules/cicd"
+  source = "../../modules/cicd"
   repository_branch = "develop"
   repository_owner = "Gzerox"
   repository_name = "aws-infra-intw-dd"
