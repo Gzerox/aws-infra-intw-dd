@@ -1,8 +1,12 @@
-data "template_file" "buildspec" {
+data "template_file" "buildspec_plan" {
   template = "${file("${path.module}/buildspec/terraform_plan.yml")}"
   vars = {
     env          = var.environment_shortname
   }
+}
+
+data "aws_s3_bucket" "tfstate"{
+  bucket = var.tfstate_bucket_name
 }
 
 resource "aws_codebuild_project" "terraform_plan" {
@@ -10,7 +14,7 @@ resource "aws_codebuild_project" "terraform_plan" {
   build_timeout  = 60
   name           = "wp-site-terraform-plan"
   queued_timeout = 480
-  service_role   = aws_iam_role.build_role.arn
+  service_role   = aws_iam_role.build_role_plan.arn
 
   artifacts {
     encryption_disabled    = false
@@ -40,7 +44,7 @@ resource "aws_codebuild_project" "terraform_plan" {
   }
 
   source {
-    buildspec           = data.template_file.buildspec.rendered
+    buildspec           = data.template_file.buildspec_plan.rendered
     git_clone_depth     = 1
     insecure_ssl        = false
     report_build_status = false
@@ -48,13 +52,8 @@ resource "aws_codebuild_project" "terraform_plan" {
   }
 }
 
-/* resource "aws_codebuild_source_credential" "github" {
-  auth_type   = "PERSONAL_ACCESS_TOKEN"
-  server_type = "GITHUB"
-  token       = "example"
-} */
-resource "aws_iam_role" "build_role" {
-  name = "codebuild-${var.environment_shortname}-role"
+resource "aws_iam_role" "build_role_plan" {
+  name = "codebuild-${var.environment_shortname}-role-plan"
 
   assume_role_policy = <<EOF
 {
@@ -72,8 +71,8 @@ resource "aws_iam_role" "build_role" {
 EOF
 }
 
-resource "aws_iam_role_policy" "build_role" {
-  role = aws_iam_role.build_role.name
+resource "aws_iam_role_policy" "build_role_plan" {
+  role = aws_iam_role.build_role_plan.name
 
   policy = <<POLICY
 {
@@ -81,45 +80,11 @@ resource "aws_iam_role_policy" "build_role" {
   "Statement": [
     {
       "Effect": "Allow",
-      "Resource": [
+      "Action": [
         "*"
-      ],
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ec2:CreateNetworkInterface",
-        "ec2:DescribeDhcpOptions",
-        "ec2:DescribeNetworkInterfaces",
-        "ec2:DeleteNetworkInterface",
-        "ec2:DescribeSubnets",
-        "ec2:DescribeSecurityGroups",
-        "ec2:DescribeVpcs"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "ec2:CreateNetworkInterfacePermission"
       ],
       "Resource": [
         "*"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:*"
-      ],
-      "Resource": [
-        "${aws_s3_bucket.artifacts.arn}",
-        "${aws_s3_bucket.artifacts.arn}/*"
       ]
     }
   ]

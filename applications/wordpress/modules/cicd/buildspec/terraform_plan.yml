@@ -10,7 +10,7 @@ phases:
       - terraform version
   pre_build:
     commands:
-      - terraform -chdir=applications/wordpress/components/infrastructure init -input=false -var-file="../../environments/$ENV_NAME.tfvars" -var-file="../../regions/eu-central-1.tfvars"
+      - terraform -chdir=applications/wordpress/components/infrastructure init -input=false -backend-config="../../environments/$ENV_NAME.backend.tfvars"
   build:
     commands:
       - terraform -chdir=applications/wordpress/components/infrastructure plan -input=false -var-file="../../environments/$ENV_NAME.tfvars" -var-file="../../regions/eu-central-1.tfvars"

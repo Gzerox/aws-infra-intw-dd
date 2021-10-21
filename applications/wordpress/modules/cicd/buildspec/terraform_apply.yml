@@ -15,7 +15,7 @@ phases:
 
   build:
     commands:
-      - terraform -chdir=applications/wordpress/components/infrastructure plan -input=false -auto-approve -var-file="../../environments/$ENV_NAME.tfvars" -var-file="../../regions/eu-central-1.tfvars" 
+      - terraform -chdir=applications/wordpress/components/infrastructure apply -input=false -auto-approve -var-file="../../environments/$ENV_NAME.tfvars" -var-file="../../regions/eu-central-1.tfvars" 
 
   post_build:
     commands:

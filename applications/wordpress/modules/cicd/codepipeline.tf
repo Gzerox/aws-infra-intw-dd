@@ -3,7 +3,7 @@ resource "aws_codestarconnections_connection" "github" {
   provider_type = "GitHub"
 }
 resource "aws_codepipeline" "static_web_pipeline" {
-  name     = "static-web-pipeline"
+  name     = "wp-site-dev-pipeline"
   role_arn = aws_iam_role.codepipeline_role.arn
 
   artifact_store {
@@ -150,7 +150,9 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
       ],
       "Resource": [
         "${aws_s3_bucket.artifacts.arn}",
-        "${aws_s3_bucket.artifacts.arn}/*"
+        "${aws_s3_bucket.artifacts.arn}/*",
+        "${data.aws_s3_bucket.tfstate.arn}",
+        "${data.aws_s3_bucket.tfstate.arn}/*"
       ]
     },
         {

@@ -17,3 +17,7 @@ variable "environment_shortname" {
 variable "artifacts_bucket_name" {
   description = "S3 Bucket for storing artifacts"
 }
+
+variable "tfstate_bucket_name" {
+  description = "S3 Bucket for storing artifacts"
+}
