@@ -1,6 +1,10 @@
 variable "vpc_id" {
   type = string
 }
+variable "aws_s3_static_assets"{
+    description = "S3 Bucket name to store static assets"
+    type        = string
+}
 variable "aws_resource_suffix"{
     description = "Suffix to use on resource naming"
     type        = string

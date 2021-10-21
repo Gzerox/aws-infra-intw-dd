@@ -8,6 +8,7 @@ module "network" {
 
 module "webserver" {
   source = "../../modules/webserver"
+  aws_s3_static_assets = "${var.project_name}-${var.environment_shortname}-static-assets"
   aws_resource_suffix = "${var.project_name}-${var.environment_shortname}"
   vpc_id = module.network.vpc_id
   lb_subnets_ids = module.network.subnet_public_ids
