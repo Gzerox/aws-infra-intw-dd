@@ -6,12 +6,9 @@ terraform {
     }
   }
   # On first terraform apply,  you should comment out this.
-/*   backend "s3" {
-    bucket = "wp-site-tfstate"
-    key    = "environment/terraform"
-    region = "eu-central-1"
-    dynamodb_table = "wp-site-terraform-locking"
-  } */
+  backend "s3" {
+    key    = "automations/terraform_tfstate"
+  }
   required_version = ">= 1.0.9"
 }
 
