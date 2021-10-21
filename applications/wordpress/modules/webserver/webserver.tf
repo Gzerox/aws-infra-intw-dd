@@ -92,7 +92,7 @@ resource "aws_autoscaling_group" "web" {
     "GroupTotalInstances"
   ]
 
-  vpc_zone_identifier  = var.subnets_ids
+  vpc_zone_identifier  = var.private_subnets_ids
 
   # Required to redeploy without an outage.
   lifecycle {

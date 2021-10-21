@@ -25,7 +25,7 @@ resource "aws_lb" "web" {
   name = "lb-${var.aws_resource_suffix}"
   load_balancer_type = "application"
   internal = false
-  subnets = var.subnets_ids
+  subnets = var.lb_subnets_ids
   #cross_zone_load_balancing   = true
 
   security_groups = [
