@@ -18,6 +18,8 @@ provider "aws" {
 
   default_tags {
     tags = {
+      Project = var.project_name
+      Component = "Automations"
       Environment = var.environment
       Owner       = "DevOps Team"
     }

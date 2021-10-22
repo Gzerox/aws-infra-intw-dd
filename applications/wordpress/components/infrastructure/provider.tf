@@ -5,7 +5,7 @@ terraform {
       version = "~> 3.63"
     }
   }
-  # On first terraform apply,  you should comment out this.
+
   backend "s3" {
     key    = "infrastructure/terraform_tfstate"
   }
@@ -18,6 +18,8 @@ provider "aws" {
 
   default_tags {
     tags = {
+      Project = var.project_name
+      Component = "Infrastructure"
       Environment = var.environment
       Owner       = "DevOps Team"
     }
