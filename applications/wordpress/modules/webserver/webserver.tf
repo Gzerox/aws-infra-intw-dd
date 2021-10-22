@@ -50,13 +50,10 @@ resource "aws_launch_template" "web" {
       spot_instance_type = "one-time"
     }
   }
+
 /*iam_instance_profile {
     name = "test"
   } */
-
-  placement {
-    availability_zone = "eu-central-1a"
-  }
 
   user_data = filebase64("${path.module}/userdata.sh")
 }
