@@ -51,6 +51,11 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
       origin_protocol_policy = "http-only"
       origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2", "SSLv3"]
     }
+
+    custom_header {
+      name = "X-Custom-Header"
+      value = "random-value-cFFDfmpU8eimk6CR@@3yU49@"
+    }
   }
 
   default_cache_behavior {

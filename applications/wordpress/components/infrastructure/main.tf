@@ -12,6 +12,7 @@ module "webserver" {
   
   aws_s3_static_assets = "${var.project_name}-${var.environment_shortname}-static-assets"
   aws_resource_suffix = "${var.project_name}-${var.environment_shortname}"
+  sg_bastion_host_id = module.bastionhost.security_group_ssh_out
   vpc_id = module.network.vpc_id
   lb_subnets_ids = module.network.subnet_public_ids
   private_subnets_ids = module.network.subnet_private_ids
@@ -19,15 +20,15 @@ module "webserver" {
 }
 
 
-module "rds"{
-  source = "../../modules/rds"
+# module "rds"{
+#   source = "../../modules/rds"
 
-  vpc_id = module.network.vpc_id
-  aws_resource_suffix = "${var.project_name}-${var.environment_shortname}"
-  aws_rds_az = var.aws_availability_zones
-  rds_private_subnets_ids = module.network.subnet_private_ids
-  security_group_id_allowed = [module.webserver.security_group_id]
-}
+#   vpc_id = module.network.vpc_id
+#   aws_resource_suffix = "${var.project_name}-${var.environment_shortname}"
+#   aws_rds_az = var.aws_availability_zones
+#   rds_private_subnets_ids = module.network.subnet_private_ids
+#   security_group_id_allowed = [module.webserver.security_group_id]
+# }
 
 module "bastionhost" {
   source = "../../modules/bastionhost"

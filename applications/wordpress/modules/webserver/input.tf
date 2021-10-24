@@ -21,3 +21,8 @@ variable "private_subnets_ids" {
     description = "List of subnets ids to be used withing the autoscaling group."
     type = set(string)
 }
+
+variable "sg_bastion_host_id" {
+    description = "SG Id used by bastion host for SSH connection to WS"
+    type = string
+}

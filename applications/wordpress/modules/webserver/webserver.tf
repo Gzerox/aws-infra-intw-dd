@@ -26,9 +26,25 @@ resource "aws_security_group" "allow_from_lb" {
     protocol    = "tcp"
     security_groups = [aws_security_group.lb_http.id]
   }
-
   tags = {
     Name = "Allow HTTP Security Group"
+  }
+}
+
+resource "aws_security_group" "allow_ssh_inbound_webserver" {
+  name        = "allow_ssh_inbound_webserver"
+  description = "Allow SSH Inbound Connection to WebServer Private instance"
+  vpc_id = var.vpc_id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    security_groups = [var.sg_bastion_host_id]
+  }
+  
+  tags = {
+    Name = "Allow SSH inbound From BH"
   }
 }
 resource "aws_key_pair" "web" {
@@ -42,7 +58,7 @@ resource "aws_launch_template" "web" {
   instance_type = "t2.micro"
 
   key_name = aws_key_pair.web.key_name
-  vpc_security_group_ids = [aws_security_group.allow_from_lb.id,aws_security_group.allow_http_out.id]
+  vpc_security_group_ids = [aws_security_group.allow_from_lb.id,aws_security_group.allow_http_out.id,aws_security_group.allow_ssh_inbound_webserver.id]
 
   instance_market_options {
     market_type = "spot"
@@ -62,7 +78,6 @@ resource "aws_autoscaling_group" "web" {
   name = "asg-${var.aws_resource_suffix}"
 
   min_size             = 1
-  desired_capacity     = 1
   max_size             = 3
   
   health_check_type    = "ELB"
@@ -95,4 +110,16 @@ resource "aws_autoscaling_group" "web" {
     propagate_at_launch = true
   }
 
+}
+
+resource "aws_autoscaling_policy" "on_high_cpu" {
+  name                   = "ScaleOnHighCPU"
+  policy_type = "TargetTrackingScaling"
+  autoscaling_group_name = aws_autoscaling_group.web.name
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+    target_value = 70.0
+  }
 }

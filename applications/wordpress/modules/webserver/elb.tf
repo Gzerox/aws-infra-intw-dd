@@ -26,7 +26,6 @@ resource "aws_lb" "web" {
   load_balancer_type = "application"
   internal = false
   subnets = var.lb_subnets_ids
-  #cross_zone_load_balancing   = true
 
   security_groups = [
     aws_security_group.lb_http.id
@@ -43,13 +42,33 @@ resource "aws_lb_target_group" "web" {
 
 resource "aws_lb_listener" "web" {
   load_balancer_arn = aws_lb.web.arn
+
   port              = "80"
   protocol          = "HTTP"
-  #ssl_policy        = "ELBSecurityPolicy-2016-08"
-  #certificate_arn   = "arn:aws:iam::187416307283:server-certificate/test_cert_rab3wuqwgja25ct3n4jdj2tzu4"
-
   default_action {
+    type = "fixed-response"
+
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Access Denied"
+      status_code  = "403"
+    }
+  }
+}
+
+resource "aws_lb_listener_rule" "custom_header" {
+  listener_arn = aws_lb_listener.web.arn
+  priority     = 99
+
+  action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.web.arn
+  }
+
+  condition {
+    http_header {
+      http_header_name = "X-Custom-Header"
+      values           = ["random-value-cFFDfmpU8eimk6CR@@3yU49@"]
+    }
   }
 }

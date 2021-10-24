@@ -3,12 +3,18 @@
 # Limitation/Issue
 1. Subnet CIDR Calculation can be better.
 2. Using Single Subnet may cause RDS creation to Fail (Min 2 Required)
-3. 
-
+3. VPC NACL Can be restricted for Ephemeral ports and Health Checks
+4. ..
 # To Improve:
 1. RDS Username & Password via AWS Secret Manager
-2. Addition of Terragrunt
-3. Tests automation with Terratest.
+2. Connection to WebServer Private instances should be made via SessionManager, and BH totally removed.
+3. CI/CD should laverage on "terraform plan -out xxx"
+4. Addition of Terragrunt
+5. Tests automation with Terratest.
+6. ..
+
+
+# General Instructions
 
 1. Backend Initialization:
 
