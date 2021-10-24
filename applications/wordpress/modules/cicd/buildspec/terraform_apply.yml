@@ -1,0 +1,22 @@
+version: 0.2
+
+phases:
+
+  install:
+    commands:
+      - "yum install unzip -y"
+      - "wget https://releases.hashicorp.com/terraform/1.0.9/terraform_1.0.9_linux_amd64.zip"
+      - "unzip terraform_1.0.9_linux_amd64.zip"
+      - "mv terraform /usr/local/bin/"
+      - terraform version
+  pre_build:
+    commands:
+      - terraform -chdir=applications/wordpress/components/infrastructure init -input=false -backend-config="../../environments/$ENV_NAME.backend.tfvars"
+
+  build:
+    commands:
+      - terraform -chdir=applications/wordpress/components/infrastructure apply -input=false -auto-approve -var-file="../../environments/$ENV_NAME.tfvars" -var-file="../../regions/eu-central-1.tfvars" 
+
+  post_build:
+    commands:
+      - echo terraform $TF_COMMAND_A completed on `date`
